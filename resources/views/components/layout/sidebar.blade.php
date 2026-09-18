@@ -96,7 +96,7 @@
             </li>
         </ul>
     </li>
-    <li class="nav-item {{ menu_open_partial('rules.') }} {{ menu_open_partial('rule-groups.') }} {{ menu_open_partial('webhooks.') }}  {{ menu_open_partial('recurring.') }}">
+    <li class="nav-item {{ menu_open_partial('rules.') }} {{ menu_open_partial('rule-groups.') }} {{ menu_open_partial('webhooks.') }}  {{ menu_open_partial('recurring.') }} {{ menu_open_partial('transaction-templates.') }}">
         <a href="#" class="nav-link">
             <em class="nav-icon bi bi-cpu"></em>
             <p>
@@ -133,6 +133,12 @@
                     </span>
                 </li>
             @endif
+            <li class="nav-item">
+                <a href="{{ route('transaction-templates.index') }}" class="nav-link {{ menu_item_active_partial('transaction-templates.') }}">
+                    <em class="nav-icon bi bi-file-earmark-text"></em>
+                    <p>{{ __('transaction_templates.title') }}</p>
+                </a>
+            </li>
         </ul>
     </li>
     <li class="nav-header text-uppercase">{{ __('firefly.organization') }}</li>

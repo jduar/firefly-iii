@@ -71,6 +71,7 @@ import Alpine from "alpinejs";
 import { keyUpFromSource } from "./shared/keyup-from-source.js";
 import { keyUpFromDestination } from "./shared/keyup-from-destination.js";
 import { keyUpFromDescription } from "./shared/keyup-from-description.js";
+import { applyTemplate } from "./shared/apply-template.js";
 
 window.enableDates = false;
 
@@ -195,6 +196,7 @@ let create = function () {
         keyUpFromSource: keyUpFromSource,
         keyUpFromDestination: keyUpFromDestination,
         keyUpFromDescription: keyUpFromDescription,
+        applyTemplate: applyTemplate,
         changedAmount: changedAmount,
         changedForeignAmount: changedForeignAmount,
         showMessageOrRedirectUser: showMessageOrRedirectUser,

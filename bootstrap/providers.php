@@ -39,6 +39,7 @@ use FireflyIII\Providers\RuleGroupServiceProvider;
 use FireflyIII\Providers\RuleServiceProvider;
 use FireflyIII\Providers\SearchServiceProvider;
 use FireflyIII\Providers\TagServiceProvider;
+use FireflyIII\Providers\TransactionTemplateServiceProvider;
 // use TwigBridge\ServiceProvider;
 use PragmaRX\Google2FALaravel\ServiceProvider;
 
@@ -70,4 +71,5 @@ return [
     TagServiceProvider::class,
     AdminServiceProvider::class,
     RecurringServiceProvider::class,
+    TransactionTemplateServiceProvider::class,
 ];

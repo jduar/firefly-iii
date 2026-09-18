@@ -10,6 +10,10 @@
                 <div class="card-body transaction-info">
                     <!-- GROUP TITLE -->
                     @include('partials.form.transaction.group-title')
+
+                    <!-- TRANSACTION TEMPLATE -->
+                    @include('partials.form.transaction.transaction-template')
+
                     <!-- DESCRIPTION -->
                     @include('partials.form.transaction.description')
 
