@@ -1,3 +1,29 @@
+## Transactions template fork
+
+This fork implements a simple and very crude transaction template feature. It allows the creation of templates which can be used to auto-fill fields when creating a new transaction.
+
+Given it's unlikely to be merged upstream, I've purposefully structured certain parts of the feature in a way that, while not following the project's structure, touches less existing files, hopefully avoiding conflicts in the future when syncing with upstream.
+
+The fork includes a Dockerfile that allows me to build the resulting image more easily.
+
+The `FROM` tag must match `'version'` in `config/firefly.php`, since vendor/ and the generated translations come from that image. Both move together when merging an upstream release.
+
+```bash
+docker build -t firefly-iii-templates:6.7.2 .
+```
+
+I've also included an "escape hatch" command that drops the `transaction_templates` table, in case I want to go back to using the original image with a clean DB.
+
+Run with:
+
+```bash
+docker exec firefly-iii php artisan firefly-iii:remove-transaction-templates
+```
+
+Run it **before** switching back to the upstream image.
+
+***
+
 <p align="center">
   <a href="https://firefly-iii.org/">
     <img src="https://raw.githubusercontent.com/firefly-iii/firefly-iii/develop/.github/assets/img/logo-small.png" alt="Firefly III" width="120" height="178">
