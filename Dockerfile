@@ -12,7 +12,7 @@ COPY resources/assets/v3 ./resources/assets/v3
 RUN npm ci
 RUN npm run build --workspace=v3
 
-FROM fireflyiii/core:version-6.7.2
+FROM fireflyiii/core:version-6.7.3
 
 COPY --chown=www-data:www-data . /var/www/html
 COPY --chown=www-data:www-data --from=assets /build/public/build /var/www/html/public/build

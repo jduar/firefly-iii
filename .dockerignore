@@ -1,0 +1,13 @@
+.git
+.github
+.ci
+.dev
+.env
+.phpunit.cache
+node_modules
+vendor
+storage
+public/build
+public/v3/i18n
+Dockerfile
+.dockerignore
