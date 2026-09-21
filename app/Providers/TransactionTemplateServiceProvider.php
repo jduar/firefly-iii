@@ -6,8 +6,11 @@ namespace FireflyIII\Providers;
 
 use Diglactic\Breadcrumbs\Breadcrumbs;
 use Diglactic\Breadcrumbs\Generator;
+use FireflyIII\Models\Account;
+use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\TransactionTemplate\TransactionTemplateRepository;
 use FireflyIII\Repositories\TransactionTemplate\TransactionTemplateRepositoryInterface;
+use FireflyIII\Support\Facades\Amount;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -80,6 +83,18 @@ class TransactionTemplateServiceProvider extends ServiceProvider
     }
 
     /**
+     * The currency the create form should lock the amount to.
+     */
+    private function accountCurrencyCode(?Account $account): ?string
+    {
+        if (null === $account) {
+            return null;
+        }
+
+        return (app(AccountRepositoryInterface::class)->getAccountCurrency($account) ?? Amount::getPrimaryCurrency())->code;
+    }
+
+    /**
      * Data for the picker on the transaction create form.
      *
      * Returns an empty array unless the current request is the withdrawal
@@ -107,17 +122,21 @@ class TransactionTemplateServiceProvider extends ServiceProvider
         $return    = [];
         foreach ($templates as $template) {
             $return[] = [
-                'id'                       => (string) $template->id,
-                'name'                     => $template->name,
-                'transaction_description'  => $template->transaction_description,
-                'source_account_id'        => null === $template->source_account_id ? null : (string) $template->source_account_id,
-                'source_account_name'      => $template->sourceAccount?->name,
-                'destination_account_id'   => null === $template->destination_account_id ? null : (string) $template->destination_account_id,
-                'destination_account_name' => $template->destinationAccount?->name,
-                'budget_id'                => null === $template->budget_id ? null : (string) $template->budget_id,
-                'category_name'            => $template->category?->name,
-                'tags'                     => $template->tags ?? [],
-                'notes'                    => $template->notes,
+                'id'                                => (string) $template->id,
+                'name'                              => $template->name,
+                'transaction_description'           => $template->transaction_description,
+                'source_account_id'                 => null === $template->source_account_id ? null : (string) $template->source_account_id,
+                'source_account_name'               => $template->sourceAccount?->name,
+                'source_account_type'               => $template->sourceAccount?->accountType->type,
+                'source_account_currency_code'      => $this->accountCurrencyCode($template->sourceAccount),
+                'destination_account_id'            => null === $template->destination_account_id ? null : (string) $template->destination_account_id,
+                'destination_account_name'          => $template->destinationAccount?->name,
+                'destination_account_type'          => $template->destinationAccount?->accountType->type,
+                'destination_account_currency_code' => $this->accountCurrencyCode($template->destinationAccount),
+                'budget_id'                         => null === $template->budget_id ? null : (string) $template->budget_id,
+                'category_name'                     => $template->category?->name,
+                'tags'                              => $template->tags ?? [],
+                'notes'                             => $template->notes,
             ];
         }
 

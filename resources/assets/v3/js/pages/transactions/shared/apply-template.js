@@ -1,13 +1,7 @@
 import Tags from "bootstrap5-tags";
 
 /**
- * The tags field is not a plain input: bootstrap5-tags keeps its own DOM state,
- * so assigning entry.tags updates Alpine but leaves the visible chips stale.
- *
- * The widget instance is created inside addAllAutocompleteToForm() behind a
- * setTimeout, so it may not exist yet. If it does not, the Alpine state is still
- * correct and only the visible chips lag, which is why this returns quietly
- * instead of throwing.
+ * The tags field is not a plain input: bootstrap5-tags keeps its own DOM state.
  */
 function syncTagWidget(index, tags) {
     const element = document.getElementById("tags_" + index);
@@ -24,17 +18,15 @@ function syncTagWidget(index, tags) {
     }
 }
 
-/**
- * Accounts need id, name AND alpine_name: the visible input binds to
- * alpine_name while submission uses id.
- */
-function applyAccount(account, id, name) {
+function applyAccount(account, id, name, type, currencyCode) {
     if (null === id) {
         return;
     }
     account.id = id;
     account.name = name;
     account.alpine_name = name;
+    account.type = type;
+    account.currency_code = currencyCode;
 }
 
 /**
@@ -42,9 +34,6 @@ function applyAccount(account, id, name) {
  *
  * Fields the template defines overwrite the form. Fields the template leaves
  * blank are left untouched.
- *
- * `this` is the Alpine component, exactly as for every other shared function
- * wired into create.js.
  */
 export function applyTemplate(templateId, templates, index) {
     const id = parseInt(templateId);
@@ -66,8 +55,20 @@ export function applyTemplate(templateId, templates, index) {
         entry.description = template.transaction_description;
     }
 
-    applyAccount(entry.source_account, template.source_account_id, template.source_account_name);
-    applyAccount(entry.destination_account, template.destination_account_id, template.destination_account_name);
+    applyAccount(
+        entry.source_account,
+        template.source_account_id,
+        template.source_account_name,
+        template.source_account_type,
+        template.source_account_currency_code,
+    );
+    applyAccount(
+        entry.destination_account,
+        template.destination_account_id,
+        template.destination_account_name,
+        template.destination_account_type,
+        template.destination_account_currency_code,
+    );
 
     // budget_id arrives as a string because the budget select's options come
     // from the API as strings. Do not parseInt this.

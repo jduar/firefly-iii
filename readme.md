@@ -9,7 +9,7 @@ The fork includes a Dockerfile that allows me to build the resulting image more 
 The `FROM` tag must match `'version'` in `config/firefly.php`, since vendor/ and the generated translations come from that image. Both move together when merging an upstream release.
 
 ```bash
-docker build -t firefly-iii-templates:6.7.2 .
+docker build -t firefly-iii-templates:6.7.3 .
 ```
 
 I've also included an "escape hatch" command that drops the `transaction_templates` table, in case I want to go back to using the original image with a clean DB.
