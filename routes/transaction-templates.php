@@ -31,7 +31,7 @@ Route::group(
 // groups in routes/api.php.
 Route::group(
     [
-        'middleware' => ['api', 'user-full-auth'],
+        'middleware' => ['api'],
         'prefix'     => 'api/v1',
         'as'         => 'api.v1.transaction-templates.',
     ],

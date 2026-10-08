@@ -29,7 +29,8 @@ class TransactionTemplateTransformer extends AbstractTransformer
     public function transform(TransactionTemplate $template): array
     {
         return [
-            'name'                     => $template->name,
+            'id'                       => (string) $template->id,
+            'name'                   => $template->name,
             'transaction_description'  => $template->transaction_description,
             'source_account_id'        => null === $template->source_account_id ? null : (string) $template->source_account_id,
             'source_account_name'      => $template->sourceAccount?->name,

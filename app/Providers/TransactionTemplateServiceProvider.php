@@ -14,7 +14,6 @@ use FireflyIII\Support\Facades\Amount;
 use FireflyIII\Transformers\TransactionTemplateTransformer;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -28,7 +27,7 @@ class TransactionTemplateServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // The route file declares its own middleware groups (web + api).
-        Route::group(base_path('routes/transaction-templates.php'));
+        require base_path('routes/transaction-templates.php');
 
         $this->registerBreadcrumbs();
 
@@ -124,8 +123,7 @@ class TransactionTemplateServiceProvider extends ServiceProvider
 
         $return = [];
         foreach ($templates as $template) {
-            $return[] = ['id' => (string) $template->id]
-                + $transformer->transform($template)
+            $return[] = $transformer->transform($template)
                 + [
                     'source_account_type'               => $template->sourceAccount?->accountType->type,
                     'source_account_currency_code'      => $this->accountCurrencyCode($template->sourceAccount),
