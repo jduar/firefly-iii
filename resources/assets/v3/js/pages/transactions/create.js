@@ -27,6 +27,7 @@ import Post from "../../api/model/transaction/post.js";
 import Get from "../../api/model/account/get.js";
 import { loadCurrencies } from "./shared/load-currencies.js";
 import { loadBudgets } from "./shared/load-budgets.js";
+import { loadTransactionTemplates } from "./shared/load-transaction-templates.js";
 import { loadPiggyBanks } from "./shared/load-piggy-banks.js";
 import { loadSubscriptions } from "./shared/load-subscriptions.js";
 import { addAllAutocompleteToForm } from "./shared/add-autocomplete.js";
@@ -145,6 +146,7 @@ let create = function () {
             primaryCurrencies: [], // TODO this list is not being used.
             foreignCurrencies: [], // this is the select list for foreign currencies.
             budgets: [],
+            transactionTemplates: [],
             piggyBanks: [],
             subscriptions: [],
             linkTypes: [],
@@ -338,6 +340,9 @@ let create = function () {
                 this.formData.budgets = data;
                 this.formStates.loadingBudgets = false;
                 this.autoStep();
+            });
+            loadTransactionTemplates().then((data) => {
+                this.formData.transactionTemplates = data;
             });
             loadPiggyBanks().then((data) => {
                 this.formData.piggyBanks = data;
