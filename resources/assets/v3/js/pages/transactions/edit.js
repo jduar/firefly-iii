@@ -22,13 +22,12 @@ import "../../boot/bootstrap.js";
 import dates from "../../pages/shared/dates.js";
 import Get from "../../api/model/transaction/get.js";
 import { parseDownloadedSplits } from "./shared/parse-downloaded-splits.js";
-import { addAllAutocompleteToForm, getUrls } from "./shared/add-autocomplete.js";
+import { addAllAutocompleteToForm } from "./shared/add-autocomplete.js";
 import { loadCurrencies } from "./shared/load-currencies.js";
 import { loadBudgets } from "./shared/load-budgets.js";
 import { loadPiggyBanks } from "./shared/load-piggy-banks.js";
 import { processUploadError } from "./shared/process-upload-error.js";
 import { loadSubscriptions } from "./shared/load-subscriptions.js";
-import Tags from "bootstrap5-tags";
 import i18next from "i18next";
 import { defaultErrorSet } from "./shared/create-empty-split.js";
 import { parseFromEntries } from "./shared/parse-from-entries.js";
@@ -46,7 +45,14 @@ import { changedAmount } from "./shared/changed-amount.js";
 import { changedForeignAmount } from "./shared/changed-foreign-amount.js";
 import { parseErrors } from "./shared/parse-errors.js";
 import { addSplit } from "./shared/add-split.js";
-import { clearDestinationAccount, clearSourceAccount } from "./shared/clear-fields.js";
+import {
+    clearAmount,
+    clearCategory,
+    clearDescription,
+    clearForeignAmount,
+    clearDestinationAccount,
+    clearSourceAccount,
+} from "./shared/clear-fields.js";
 import { detectTransactionType } from "./shared/detect-transaction-type.js";
 import { determineAmountCurrency } from "./shared/determine-amount-currency.js";
 import { loadCustomFields } from "./shared/load-custom-fields.js";
@@ -70,10 +76,10 @@ import { redirectAfterTransactionLinks } from "./shared/redirect-after-transacti
 import { addTabListener } from "./shared/add-tab-listener.js";
 import { autoStep } from "./shared/auto-step.js";
 import { respondToTabSwitch } from "./shared/respond-to-tab-switch.js";
-import Alpine from "alpinejs";
+import Alpine from "@alpinejs/csp";
 import focusFirstInput from "../../shared/focus-first-input.js";
+import filterForeignCurrencies from "./shared/filter-foreign-currencies.js";
 
-const urls = getUrls();
 window.enableDates = false;
 
 let transactions = function () {
@@ -184,6 +190,10 @@ let transactions = function () {
         addSplit: addSplit,
         clearSourceAccount: clearSourceAccount,
         clearDestinationAccount: clearDestinationAccount,
+        clearCategory: clearCategory,
+        clearDescription: clearDescription,
+        clearAmount: clearAmount,
+        clearForeignAmount: clearForeignAmount,
         detectTransactionType: detectTransactionType,
         determineAmountCurrency: determineAmountCurrency,
         addAllAutocompleteToForm: addAllAutocompleteToForm,
@@ -207,6 +217,7 @@ let transactions = function () {
         addTabListener: addTabListener,
         autoStep: autoStep,
         respondToTabSwitch: respondToTabSwitch,
+        filterForeignCurrencies: filterForeignCurrencies,
 
         // part of the account selection auto-complete
 
@@ -222,11 +233,11 @@ let transactions = function () {
         },
 
         changedDestinationAccount() {
-            console.warn("changedDestinationAccount, event is not used");
+            this.detectTransactionType();
         },
 
         changedSourceAccount() {
-            console.warn("changedSourceAccount, event is not used");
+            this.detectTransactionType();
         },
 
         getTags(index) {
@@ -248,7 +259,6 @@ let transactions = function () {
                     this.groupProperties.title =
                         data.attributes.group_title ?? data.attributes.transactions[0].description;
                     this.entries = parseDownloadedSplits(data.attributes.transactions, parseInt(data.id));
-
                     // set empty arrays
                     for (let i = 0; i < this.entries.length; i++) {
                         this.links[i] = []; // empty set of links.
@@ -279,37 +289,28 @@ let transactions = function () {
                 })
                 .then(() => {
                     focusFirstInput();
+                    let tagSelect;
                     this.groupProperties.totalAmount = 0;
                     for (let i in this.entries) {
                         if (Object.hasOwn(this.entries, i)) {
                             this.groupProperties.totalAmount =
                                 this.groupProperties.totalAmount + parseFloat(this.entries[i].amount);
+                            // add the tags. This is not done in Alpine itself because the combination between
+                            // the Autocomplete library and Alpine breaks for some reason.
+                            tagSelect = document.getElementById("tags_" + i);
+                            if (null !== tagSelect) {
+                                // console.log("Is not null.");
+                                for (let j in this.entries[i].tags) {
+                                    if (Object.hasOwn(this.entries[i].tags, j)) {
+                                        tagSelect.options.add(
+                                            new Option(this.entries[i].tags[j], this.entries[i].tags[j], true, true),
+                                        );
+                                    }
+                                }
+                            }
                         }
                     }
-                    setTimeout(() => {
-                        // send event that transaction group is loaded.
-                        // document.dispatchEvent(new CustomEvent('transaction-group-loaded'));
 
-                        // TODO should not be on a timeout.
-                        // render tags:
-                        Tags.init("select.ac-tags", {
-                            allowClear: true,
-                            server: urls.tag,
-                            liveServer: true,
-                            clearEnd: true,
-                            allowNew: true,
-                            labelField: "title",
-                            valueField: "id",
-                            queryParam: "filter[query]",
-                            notFoundMessage: i18next.t("firefly.nothing_found"),
-                            noCache: true,
-                            fetchOptions: {
-                                headers: {
-                                    "X-CSRF-TOKEN": document.head.querySelector('meta[name="csrf-token"]').content,
-                                },
-                            },
-                        });
-                    }, 150);
                     this.autoStep();
                 });
         },
@@ -354,8 +355,14 @@ let transactions = function () {
                 this.autoStep();
             });
 
+            document.addEventListener("upload-failed", (event) => {
+                // console.log('Now in event listener "upload-failed"');
+                this.processUploadError(event);
+            });
+
             // add some event listeners
             document.addEventListener("upload-success", () => {
+                // console.log('Trigger on event "upload-success"');
                 this.processUpload();
                 document.querySelectorAll("input[type=file]").forEach((input) => (input.value = ""));
             });
@@ -367,7 +374,8 @@ let transactions = function () {
 
         // TODO is a duplicate
         processUpload() {
-            this.showMessageOrRedirectUser();
+            this.formStates.storedAttachments = true;
+            this.showMessageOrRedirectUser("edit.js processUpload");
         },
 
         // submit the transaction form.
@@ -437,7 +445,7 @@ let transactions = function () {
                     }
 
                     // if not, respond to user options:
-                    this.showMessageOrRedirectUser();
+                    this.showMessageOrRedirectUser("edit.js save Put submission");
                 })
                 .catch((error) => {
                     console.error(error);

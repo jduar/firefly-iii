@@ -22,7 +22,7 @@ import "../../boot/bootstrap.js";
 import sidebar from "../../pages/shared/sidebar.js";
 import dates from "../shared/dates.js";
 import i18next from "i18next";
-import Alpine from "alpinejs";
+import Alpine from "@alpinejs/csp";
 
 let create = function () {
     return {
@@ -37,11 +37,11 @@ let create = function () {
                     let direction = event.target.value;
                     if ("credit" === direction) {
                         document.querySelector('label[for="ffInput_opening_balance"]').textContent =
-                            i18next.t("firefly.i_am_owed_amount");
+                            window.i18next.t("firefly.i_am_owed_amount");
                     }
                     if ("debit" === direction) {
                         document.querySelector('label[for="ffInput_opening_balance"]').textContent =
-                            i18next.t("firefly.i_owe_amount");
+                            window.i18next.t("firefly.i_owe_amount");
                     }
                 });
                 // also change it the first time around

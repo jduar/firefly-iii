@@ -22,14 +22,14 @@
 import "../../boot/bootstrap.js";
 import sidebar from "../../pages/shared/sidebar.js";
 import dates from "../shared/dates.js";
-import format from "date-fns/format";
+import { format } from "date-fns/format";
 import i18next from "i18next";
 import Post from "../../api/model/exchange-rate/post.js";
 import Put from "../../api/model/exchange-rate/put.js";
 import Delete from "../../api/model/exchange-rate/delete.js";
 import Get from "../../api/model/currency/get.js";
 import GetRate from "../../api/model/exchange-rate/get.js";
-import Alpine from "alpinejs";
+import Alpine from "@alpinejs/csp";
 
 let rates = function () {
     return {
@@ -115,10 +115,18 @@ let rates = function () {
                         });
                 }
                 if (0 !== parseInt(this.rates[index].rate_id)) {
-                    // console.log("[a] PUT, not POST.");
-                    new Put().put({ rate: this.rates[index].rate }, { id: this.rates[index].rate_id }).then(() => {
-                        this.updating = false;
-                    });
+                    // console.log("[a] PUT, not POST.", this.rates[index]);
+                    new Put()
+                        .put(
+                            {
+                                date: this.rates[index].date_field,
+                                rate: this.rates[index].rate,
+                            },
+                            { id: this.rates[index].rate_id },
+                        )
+                        .then(() => {
+                            this.updating = false;
+                        });
                 }
             }
             if ("" !== this.rates[index].inverse) {
@@ -140,9 +148,15 @@ let rates = function () {
                         });
                 }
                 if (0 !== parseInt(this.rates[index].inverse_id)) {
-                    // console.log("[b] PUT, not POST.");
+                    // console.log("[a] PUT, not POST.", this.rates[index]);
                     new Put()
-                        .put({ rate: this.rates[index].inverse }, { id: this.rates[index].inverse_id })
+                        .put(
+                            {
+                                rate: this.rates[index].inverse,
+                                date: this.rates[index].date_field,
+                            },
+                            { id: this.rates[index].inverse_id },
+                        )
                         .then(() => {
                             this.updating = false;
                         });
@@ -241,7 +255,11 @@ let rates = function () {
                                 date: date,
                                 rate_id: rate_id,
                                 inverse_id: inverse_id,
-                                date_formatted: format(date, this.i18next.t("config.date_time_fns")),
+                                date_formatted: format(
+                                    date,
+                                    window.i18next.t("config.date_time_fns", { lng: window.store.get("locale") }),
+                                    window.store.get("locale"),
+                                ),
                                 date_field: current.attributes.date.substring(0, 10),
                                 rate: rate,
                                 inverse: "",

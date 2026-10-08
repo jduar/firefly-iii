@@ -78,6 +78,8 @@ export function createEmptySplit() {
     return {
         transaction_journal_id: 0,
         description: "",
+        reconciled: false,
+        ogReconciled: false,
 
         // amount information:
         amount: "",
@@ -93,7 +95,7 @@ export function createEmptySplit() {
         budget_id: null,
         category_name: "",
         piggy_bank_id: null,
-        bill_id: null,
+        bill_id: 0,
         tags: [],
         notes: "",
 

@@ -42,7 +42,14 @@ import i18next from "i18next";
 import { processUploadError } from "./shared/process-upload-error.js";
 import { showMessageOrRedirectUser } from "./shared/show-message-or-redirect.js";
 import { addSplit } from "./shared/add-split.js";
-import { clearDestinationAccount, clearSourceAccount } from "./shared/clear-fields.js";
+import {
+    clearDestinationAccount,
+    clearSourceAccount,
+    clearCategory,
+    clearDescription,
+    clearAmount,
+    clearForeignAmount,
+} from "./shared/clear-fields.js";
 import { detectTransactionType } from "./shared/detect-transaction-type.js";
 import { determineAmountCurrency } from "./shared/determine-amount-currency.js";
 import { loadCustomFields } from "./shared/load-custom-fields.js";
@@ -66,11 +73,12 @@ import { addTabListener } from "./shared/add-tab-listener.js";
 import { autoStep } from "./shared/auto-step.js";
 import { respondToTabSwitch } from "./shared/respond-to-tab-switch.js";
 import { loadTransactionLinks } from "./shared/load-transaction-links.js";
-import Alpine from "alpinejs";
+import Alpine from "@alpinejs/csp";
 import { keyUpFromSource } from "./shared/keyup-from-source.js";
 import { keyUpFromDestination } from "./shared/keyup-from-destination.js";
 import { keyUpFromDescription } from "./shared/keyup-from-description.js";
 import focusFirstInput from "../../shared/focus-first-input.js";
+import filterForeignCurrencies from "./shared/filter-foreign-currencies.js";
 import { applyTemplate } from "./shared/apply-template.js";
 
 window.enableDates = false;
@@ -206,6 +214,10 @@ let create = function () {
         removeSplit: removeSplit,
         clearSourceAccount: clearSourceAccount,
         clearDestinationAccount: clearDestinationAccount,
+        clearCategory: clearCategory,
+        clearDescription: clearDescription,
+        clearAmount: clearAmount,
+        clearForeignAmount: clearForeignAmount,
         detectTransactionType: detectTransactionType,
         determineAmountCurrency: determineAmountCurrency,
         addAllAutocompleteToForm: addAllAutocompleteToForm,
@@ -228,41 +240,7 @@ let create = function () {
         autoStep: autoStep,
         respondToTabSwitch: respondToTabSwitch,
         loadTransactionLinks: loadTransactionLinks,
-
-        filterForeignCurrencies(code) {
-            let list = [];
-            let currency;
-            for (let i in this.formData.enabledCurrencies) {
-                if (Object.hasOwn(this.formData.enabledCurrencies, i)) {
-                    let current = this.formData.enabledCurrencies[i];
-                    if (current.code === code) {
-                        currency = current;
-                    }
-                }
-            }
-            list.push(currency);
-            this.formData.foreignCurrencies = list;
-            // is he source account currency anyway:
-            if (1 === list.length && list[0].code === this.entries[0].source_account.currency_code) {
-                // console.log(
-                //     "Foreign currency is same as source currency. Disable foreign amount.",
-                // );
-                this.formBehaviour.foreignCurrencyEnabled = false;
-            }
-            if (1 === list.length && list[0].code !== this.entries[0].source_account.currency_code) {
-                // console.log(
-                //     "Foreign currency is NOT same as source currency. Enable foreign amount.",
-                // );
-                this.formBehaviour.foreignCurrencyEnabled = true;
-            }
-
-            // this also forces the currency_code on ALL entries.
-            for (let i in this.entries) {
-                if (Object.hasOwn(this.entries, i)) {
-                    this.entries[i].foreign_currency_code = code;
-                }
-            }
-        },
+        filterForeignCurrencies: filterForeignCurrencies,
 
         addedSplit() {
             this.addAllAutocompleteToForm();
@@ -273,14 +251,9 @@ let create = function () {
         processUpload() {
             // console.log("Now in processUpload()");
             this.formStates.storedAttachments = true;
-            this.showMessageOrRedirectUser();
+            this.showMessageOrRedirectUser("create.js processUpload");
         },
-        clearDescription(index) {
-            this.entries[index].description = "";
-        },
-        clearCategory(index) {
-            this.entries[index].category_name = "";
-        },
+
         fillSourceAccount() {
             this.fillAccount("source", "source_account");
         },
@@ -288,7 +261,7 @@ let create = function () {
             this.fillAccount("destination", "destination_account");
         },
         fillAccount(direction, field) {
-            this.entries[0][field].loading = true;
+            // this.entries[0][field].loading = true;
             const urlParams = new URLSearchParams(window.location.search);
             const accountId = parseInt(urlParams.get(direction));
             if (accountId > 0) {
@@ -309,10 +282,14 @@ let create = function () {
                         id: account.id,
                         loading: false,
                         name: attributes.name,
+                        account_currency_code: attributes.currency_code,
+                        currency_code: attributes.primary_currency_code,
                         type: type,
                         alpine_name: attributes.name,
-                        disabled: false,
+                        // disabled: false,
                     };
+                    // console.log("Now detect", field, this.entries[0][field]);
+                    this.detectTransactionType();
                 });
                 return;
             }
@@ -380,7 +357,8 @@ let create = function () {
         save() {
             this.notifications.error.show = false;
             this.notifications.success.show = false;
-            this.notifications.wait.show = false;
+            this.notifications.wait.show = true;
+            this.notifications.wait.text = i18next.t("firefly.save_transaction_working");
             this.formStates.isSubmitting = true;
 
             for (let i in this.entries) {
@@ -440,7 +418,7 @@ let create = function () {
                         return;
                     }
 
-                    this.showMessageOrRedirectUser();
+                    this.showMessageOrRedirectUser("save Post>then submission");
                 })
                 .catch((error) => {
                     this.formStates.isSubmitting = true;

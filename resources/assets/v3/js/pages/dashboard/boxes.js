@@ -97,7 +97,6 @@ export default () => ({
                     continue;
                 }
                 let key = current.key;
-                // console.log('NOT PRIMARY CURRENCY');
                 if (key.startsWith("balance-in-")) {
                     this.balanceBox.amounts.push(
                         formatMoney(this.anonymous ? 0 : current.monetary_value, current.currency_code),

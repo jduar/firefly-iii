@@ -91,10 +91,15 @@ const locales = {
 
 // by providing a default string of 'PP' or any of its variants for `formatStr`
 // it will format dates in whichever way is appropriate to the locale
-export default function (date, formatStr = "PP") {
-    let locale = window.__localeId__.replace("_", "");
-    // console.log("Locale is " + locale);
-    return format(date, formatStr, {
-        locale: locales[locale] ?? locales[locale.slice(0, 2)] ?? locales["enUS"], // or global.__localeId__
-    });
+export default function (date, formatStr = "PP", locale) {
+    if (typeof locale === "undefined") {
+        locale = window.__localeId__.replace("_", "").replace("-", "");
+    }
+    let res = "(DATE ERROR)";
+    try {
+        res = format(date, formatStr, { locale: locales[locale] ?? locales[locale.slice(0, 2)] ?? locales["enUS"] });
+    } catch (error) {
+        console.warn("Could not format date: ", error);
+    }
+    return res;
 }

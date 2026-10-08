@@ -9,7 +9,7 @@
 @foreach($ruleGroups as $ruleGroup)
     <div class="row mb-2">
         <div class="col-lg-12 col-md-12 col-sm-12">
-            <div class="card rules-box" data-group="{{ $ruleGroup->id }}">
+            <div class="card rules-card" id="rules-card-{{ $ruleGroup->id }}" data-group="{{ $ruleGroup->id }}">
                     <div class="card-header">
                         <div class="row">
                             <div class="col">
@@ -22,7 +22,11 @@
                                 </h3>
                             </div>
                             <div class="col text-end">
-                                <div class="dropdown">
+                                <div class="btn-group">
+                                    <a href="{{ route('rules.create', $ruleGroup->id) }}?_from={{ urlencode($FF3_FROM) }}" class="btn btn-sm btn-outline-success">
+                                        <span class="bi bi-plus-circle"></span> {{ __('firefly.new_rule') }}
+                                    </a>
+                                <div class="btn-group">
                                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="card_header_{{ $ruleGroup->id }}" data-bs-toggle="dropdown" aria-expanded="false">
                                         <span class="bi bi-list"></span>
                                     </button>
@@ -47,7 +51,14 @@
                                         @endif
                                     </ul>
                                 </div>
+                                    <button type="button" class="btn btn-tool collapse-button" data-lte-toggle="card-collapse" aria-label="Collapse card">
+                                        <em data-lte-icon="expand" class="bi bi-plus-lg"></em>
+                                        <em data-lte-icon="collapse" class="bi bi-dash-lg"></em>
+                                    </button>
+                                </div>
                             </div>
+                        </div>
+                        <div class="card-tools">
                         </div>
                     </div>
                     <div class="card-body">
@@ -71,7 +82,7 @@
                                     <tr class="single-rule" data-order="{{ $rule->order }}" data-id="{{ $rule->id }}" data-group-id="{{ $ruleGroup->id }}" data-position="{{ $loop->index }}">
                                         <td>
                                             <div class="btn-group btn-group-sm prio_buttons">
-                                                <a class="btn btn-sm bi bi-list rule-handle"></a>
+                                                <a class="btn btn-sm btn-outline-secondary bi bi-list rule-handle"></a>
                                             </div>
                                         </td>
 
@@ -174,10 +185,10 @@
 @endsection
 @section('scripts')
     @vite(['js/pages/generic-nodates.js'])
-    <script type="text/javascript" nonce="{{ $JS_NONCE }}">
+     <script nonce="{{ $JS_NONCE }}">
         var moveRuleGroupUrl = '{{ route('rule-groups.move') }}';
         var duplicateRuleUrl = '{{ route('rules.duplicate') }}';
     </script>
-    <script type="text/javascript" src="v1/js/lib/jquery-ui.min.js?v={{ $FF_BUILD_TIME }}" nonce="{{ $JS_NONCE }}"></script>
-    <script type="text/javascript" src="v1/js/ff/rules/index.js?v={{ $FF_BUILD_TIME }}" nonce="{{ $JS_NONCE }}"></script>
+     <script src="v1/js/lib/jquery-ui.min.js?v={{ $FF_BUILD_TIME }}" nonce="{{ $JS_NONCE }}"></script>
+     <script src="v1/js/ff/rules/index.js?v={{ $FF_BUILD_TIME }}" nonce="{{ $JS_NONCE }}"></script>
 @endsection

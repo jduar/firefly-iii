@@ -54,9 +54,9 @@
                                         {{--  clone --}}
                                         @if($groupArray['transactions'][0]['type'] !== 'opening balance' && $groupArray['transactions'][0]['type'] !== 'reconciliation')
                                             <li role="separator" class="divider"></li>
-                                            <li><a class="dropdown-item clone-transaction" href="#" data-id="{{ $transactionGroup->id }}"><span
+                                            <li><a class="dropdown-item clone-transaction" data-from="{{ $FF3_FROM }}" href="#" data-id="{{ $transactionGroup->id }}"><span
                                                         class="bi bi-copy"></span> {{ __('firefly.clone') }}</a></li>
-                                            <li><a class="dropdown-item clone-transaction-and-edit" href="#" data-id="{{ $transactionGroup->id }}"><span
+                                            <li><a class="dropdown-item clone-transaction-and-edit" data-from="{{ $FF3_FROM }}" href="#" data-id="{{ $transactionGroup->id }}"><span
                                                         class="bi bi-copy"></span> {{ __('firefly.clone_and_edit') }}</a></li>
                                         @endif
                                     @endif
@@ -232,7 +232,7 @@
                                                         class="bi bi-trash"></span> {{ __('firefly.delete') }}</a></li>
                                         @endif
                                         @if($journal['reconciled'])
-                                            <li><a class="dropdown-item" class="reconcile-button" href="{{ route('transactions.unreconcile', [$journal['transaction_journal_id']]) }}"><span
+                                            <li><a class="dropdown-item reconcile-button" href="{{ route('transactions.unreconcile', [$journal['transaction_journal_id']]) }}"><span
                                                         class="bi bi-clock-history"></span> {{ __('firefly.unreconcile') }}</a></li>
                                         @endif
                                         @if($groupArray['transactions'][0]['type'] !== 'reconciliation' && $groupArray['transactions'][0]['type'] !== 'opening balance' && $groupArray['transactions'][0]['type'] !== 'liability credit')
@@ -385,11 +385,13 @@
                                     </td>
                                 </tr>
                             @endif
-                            @if(null !== $journal['location']['latitude'])
+                            @if(true === get_app_configuration('enable_external_map', false) && null !== $journal['location']['latitude'])
                                 <tr>
                                     <td class="w-30"> {{ __('firefly.location') }}</td>
                                     <td>
-                                        <div id="map_index_0">Map here</div>
+                                        <div class="map-box" style="height:250px;"  data-journal-id="{{ $journal['transaction_journal_id'] }}" data-zoom-level="{{ $journal['location']['zoom_level'] }}" data-latitude="{{ $journal['location']['latitude'] }}" data-longitude="{{ $journal['location']['longitude'] }}" id="map_index_{{ $journal['transaction_journal_id'] }}">
+
+                                        </div>
                                     </td>
                                 </tr>
                             @endif
@@ -449,7 +451,7 @@
                                     <td>
                                         @foreach($journal['tags'] as $tag)
                                             @if(null !== $tag['id'] && '' !== $tag['id'])
-                                                <h4 class="inline"><a class="badge text-bg-success" href="{{ route('tags.show', [$tag['id']]) }}"><span class="bi bi-tag"></span>{{ $tag['tag'] }}</a></h4>
+                                                <h5 class="d-inline"><a class="badge text-bg-success" href="{{ route('tags.show', [$tag['id']]) }}"><span class="bi bi-tag"></span>{{ $tag['tag'] }}</a></h5>
                                             @endif
                                         @endforeach
                                     </td>
@@ -557,7 +559,7 @@
 
 @endsection
 @section('scripts')
-    <script type="text/javascript" nonce="{{ $JS_NONCE }}">
+     <script nonce="{{ $JS_NONCE }}">
         var modalDialogURL = '{{ route('transactions.link.modal', ['%JOURNAL%']) }}';
         var groupURL = '{{ route('transactions.show',['%GROUP%']) }}';
         var switchLinkUrl = '{{ route('transactions.link.switch') }}';
@@ -567,9 +569,9 @@
     @vite(['js/pages/transactions/show.js'])
 
     {{-- new auto complete --}}
-    <script type="text/javascript" src="v1/js/lib/bootstrap-simple-autocomplete.js?v={{ $FF_BUILD_TIME }}"
+     <script src="v1/js/lib/bootstrap-simple-autocomplete.js?v={{ $FF_BUILD_TIME }}"
             nonce="{{ $JS_NONCE }}"></script>
-    <script type="text/javascript" src="v1/js/ff/transactions/show.js?v={{ $FF_BUILD_TIME }}"
+     <script src="v1/js/ff/transactions/show.js?v={{ $FF_BUILD_TIME }}"
             nonce="{{ $JS_NONCE }}"></script>
 @endsection
 

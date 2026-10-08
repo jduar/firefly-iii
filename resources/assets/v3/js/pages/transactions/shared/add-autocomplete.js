@@ -29,6 +29,7 @@ import {
     selectSourceAccount,
 } from "./autocomplete-functions.js";
 import Tags from "bootstrap5-tags";
+import getExpectedAccountTypes from "../../../form/get-expected-account-types.js";
 
 export function getUrls() {
     return {
@@ -51,18 +52,13 @@ export function addAllAutocompleteToForm() {
     // depending on the type of the transaction,
     // the filters are changed. For edit form, this means
     // the available account types may be limited.
-    if ("edit" === this.formBehaviour.formType) {
-        if ("withdrawal" === this.groupProperties.transactionType) {
-            // filters.destination = ['Expense account'];
-        }
-        if ("deposit" === this.groupProperties.transactionType) {
-            // filters.source = ['Revenue account'];
-        }
-        if ("transfer" === this.groupProperties.transactionType) {
-            filters.source = [this.entries[0].source_account.type];
-            filters.destination = [this.entries[0].source_account.type];
-        }
-    }
+
+    let transactionType = this.groupProperties.transactionType;
+    let sourceType = this.entries[0].source_account.type ?? "unknown";
+    let destinationType = this.entries[0].destination_account.type ?? "unknown";
+    filters.destination = getExpectedAccountTypes(transactionType, sourceType, destinationType);
+
+    console.log("Filters for autocomplete: ", filters);
 
     const urls = getUrls();
     setTimeout(() => {
@@ -76,13 +72,13 @@ export function addAllAutocompleteToForm() {
                 "</small>"
             );
         };
-
-        // render tags:
+        //
+        // // render tags:
         Tags.init("select.ac-tags", {
             allowClear: true,
             server: urls.tag,
             liveServer: true,
-            suggestionsThreshold: 3,
+            suggestionsThreshold: 0,
             debounceTime: 200,
             clearEnd: true,
             labelField: "tag",
@@ -103,8 +99,8 @@ export function addAllAutocompleteToForm() {
             serverUrl: urls.account,
             account_types: filters.source,
             onRenderItem: renderAccount,
-            suggestionsThreshold: 3,
-            debounceTime: 200,
+            suggestionsThreshold: 0,
+            debounceTime: 100,
             valueField: "id",
             labelField: "name",
             onChange: changeSourceAccount,
@@ -115,8 +111,8 @@ export function addAllAutocompleteToForm() {
             serverUrl: urls.account,
             valueField: "id",
             labelField: "name",
-            suggestionsThreshold: 3,
-            debounceTime: 200,
+            suggestionsThreshold: 0,
+            debounceTime: 100,
             autoselectFirst: true,
             account_types: filters.destination,
             onRenderItem: renderAccount,
@@ -127,8 +123,8 @@ export function addAllAutocompleteToForm() {
             selector: "input.ac-category",
             serverUrl: urls.category,
             valueField: "id",
-            suggestionsThreshold: 3,
-            debounceTime: 200,
+            suggestionsThreshold: 0,
+            debounceTime: 100,
             labelField: "name",
             onChange: changeCategory,
             onSelectItem: changeCategory,
@@ -137,16 +133,17 @@ export function addAllAutocompleteToForm() {
             selector: "input.ac-description",
             serverUrl: urls.description,
             valueField: "id",
-            suggestionsThreshold: 3,
-            debounceTime: 200,
+            suggestionsThreshold: 0,
+            debounceTime: 100,
             labelField: "name",
             onChange: changeDescription,
             onSelectItem: changeDescription,
         });
-    }, 150);
+    }, 100);
 }
 
 export function addAutocomplete(options) {
+    console.log('addAutocomplete("' + options.serverUrl + '")');
     const params = {
         server: options.serverUrl,
         serverParams: {},
@@ -161,30 +158,38 @@ export function addAutocomplete(options) {
             },
         },
         queryParam: "query",
+        showAllSuggestions: true,
         hiddenInput: false,
         // preventBrowserAutocomplete: true,
         highlightTyped: true,
         liveServer: true,
     };
     if (typeof options.account_types !== "undefined" && options.account_types.length > 0) {
+        console.log("Add account types");
         params.serverParams["types"] = options.account_types;
     }
     if (typeof options.onRenderItem !== "undefined" && null !== options.onRenderItem) {
         params.onRenderItem = options.onRenderItem;
     }
-    if (options.valueField) {
+    if (Object.hasOwn(options, "valueField")) {
         params.valueField = options.valueField;
     }
-    if (options.labelField) {
+    if (Object.hasOwn(options, "suggestionsThreshold")) {
+        params.suggestionsThreshold = options.suggestionsThreshold;
+    }
+    if (Object.hasOwn(options, "debounceTime")) {
+        params.debounceTime = options.debounceTime;
+    }
+    if (Object.hasOwn(options, "labelField")) {
         params.labelField = options.labelField;
     }
-    if (options.onSelectItem) {
+    if (Object.hasOwn(options, "onSelectItem")) {
         params.onSelectItem = options.onSelectItem;
     }
-    if (options.onChange) {
+    if (Object.hasOwn(options, "onChange")) {
         params.onChange = options.onChange;
     }
-    if (options.hiddenValue) {
+    if (Object.hasOwn(options, "hiddenValue")) {
         params.hiddenValue = options.hiddenValue;
     }
 

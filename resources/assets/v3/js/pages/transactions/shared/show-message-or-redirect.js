@@ -20,17 +20,18 @@
 
 import i18next from "i18next";
 
-export function showMessageOrRedirectUser() {
+export function showMessageOrRedirectUser(sourceOfCall) {
+    console.log('Called showMessageOrRedirectUser("' + sourceOfCall + '")');
     if (false === this.formStates.storedGroup) {
-        console.error("Not yet stored group, return false.");
+        console.warn("The transaction group is not yet stored, return and do nothing.");
         return;
     }
     if (false === this.formStates.storedAttachments) {
-        console.error("Not yet stored attachments, return false.");
+        console.warn("Attachment(s) is/are not yet stored, return and do nothing.");
         return;
     }
     if (false === this.formStates.storedLinks) {
-        console.error("Not yet stored links, return false.");
+        console.warn("The transaction link(s) is/are not yet stored, return and do nothing.");
         return;
     }
     // disable all messages:
@@ -75,12 +76,18 @@ export function showMessageOrRedirectUser() {
 
     // find parts
     let parts = URL.parse(params, "https://example.com/");
-    let from;
+    let from = "";
     let separator = "?";
     if ("" === parts.search) {
-        from = urlParams.get("_from").toString();
+        let fromParam = urlParams.get("_from");
+        if (null !== fromParam) {
+            from = fromParam.toString();
+        }
     }
     if ("" !== parts.search) {
+        if (parts.search.includes("&amp;")) {
+            parts.search = parts.search.replaceAll("&amp;", "&");
+        }
         let obj = new URLSearchParams(parts.search);
         let pathName = parts.pathname; // we redirect here!
         obj.delete("message");

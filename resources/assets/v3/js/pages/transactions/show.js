@@ -24,8 +24,13 @@ import dates from "../shared/dates.js";
 import i18next from "i18next";
 import Get from "../../api/model/transaction/get.js";
 import { format } from "date-fns";
-import Alpine from "alpinejs";
+import Alpine from "@alpinejs/csp";
 import "bootstrap";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerRetinaIcon from "leaflet/dist/images/marker-icon-2x.png";
+import shadow from "leaflet/dist/images/marker-shadow.png";
 
 window.enableDates = false;
 
@@ -44,8 +49,38 @@ let show = function () {
             const page = window.location.href.split("/");
             this.group.id = parseInt(page[page.length - 1]);
             this.downloadTransactionGroup();
+            this.renderMaps();
+        },
+        renderMaps() {
+            document.querySelectorAll(".map-box").forEach((container) => {
+                const lat = parseFloat(container.dataset.latitude);
+                const lng = parseFloat(container.dataset.longitude);
+                const zoom = parseFloat(container.dataset.zoomLevel);
+
+                const map = L.map(container).setView([lat, lng], zoom);
+
+                L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                    maxZoom: 19,
+                    referrerPolicy: "origin-when-cross-origin",
+                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                }).addTo(map);
+
+                L.Marker.prototype.setIcon(
+                    L.icon({
+                        iconUrl: markerIcon,
+                        iconRetinaIcon: markerRetinaIcon,
+                        shadowUrl: shadow,
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                    }),
+                );
+
+                L.marker([lat, lng]).addTo(map);
+            });
         },
         downloadTransactionGroup() {
+            let locale = window.store.get("locale");
+
             new Get().show(this.group.id).then((response) => {
                 const info = response.data.data;
                 this.group.group_title = info.attributes.group_title;
@@ -54,7 +89,11 @@ let show = function () {
                     if (Object.hasOwn(info.attributes.transactions, i)) {
                         let current = info.attributes.transactions[i];
                         current.dateObject = new Date(current.date);
-                        current.dateFormatted = format(current.dateObject, this.i18next.t("config.date_time_fns"));
+                        current.dateFormatted = format(
+                            current.dateObject,
+                            window.i18next.t("config.date_time_fns", { lng: locale }),
+                            locale,
+                        );
                         console.log("Date formatted is", current.dateFormatted);
                         this.group.transactions.push(current);
                     }

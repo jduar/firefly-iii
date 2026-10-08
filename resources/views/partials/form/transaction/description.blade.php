@@ -4,10 +4,10 @@
     </label>
     <div class="col-sm-10">
         <div class="input-group">
-        <input type="text" class="form-control ac-description"
+        <input type="search" class="form-control ac-description"
                :id="'description_' + index"
                @change="changedDescription"
-               @keyup="keyUpFromDescription"
+               @keydown="keyUpFromDescription"
                x-model="transaction.description"
                :class="{'is-invalid': transaction.errors.description.length > 0, 'form-control': true}"
                :data-index="index"

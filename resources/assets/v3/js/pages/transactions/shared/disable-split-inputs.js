@@ -19,28 +19,55 @@
  */
 
 // what happens when a user adds more than one split?
+import Autocomplete from "bootstrap5-autocomplete";
+import getExpectedAccountTypes from "../../../form/get-expected-account-types.js";
+
 export function disableSplitInputs() {
-    //console.log('Call disableSplitInputs');
-    if (this.entries.length > 1) {
-        //console.log('Activate disableSplitInputs');
-        // disable source and/or destination, based on account type.
-        for (let i = 1; i < this.entries.length; i++) {
+    let isTransferOrWithdrawal =
+        "transfer" === this.groupProperties.transactionType || "withdrawal" === this.groupProperties.transactionType;
+    let isTransferOrDeposit =
+        "transfer" === this.groupProperties.transactionType || "deposit" === this.groupProperties.transactionType;
+    //console.log('Activate disableSplitInputs');
+    // disable source and/or destination, based on account type.
+    for (let i = 0; i < this.entries.length; i++) {
+        let transactionType = this.groupProperties.transactionType;
+        let sourceType = this.entries[i].source_account.type ?? "unknown";
+        let destinationType = this.entries[i].destination_account.type ?? "unknown";
+
+        let newTypes = getExpectedAccountTypes(transactionType, sourceType, destinationType);
+
+        const el = document.getElementById("dest_" + i);
+        const inst = Autocomplete.getInstance(el);
+        if (null !== inst) {
+            let params = inst.getConfig("serverParams");
+            params.types = newTypes;
+            inst.setConfig("serverParams", params);
+        }
+
+        if (i > 0) {
             // disable dates
             this.entries[i].date_disabled = true;
 
-            // disable source when withdrawal or transfer
+            // if is withdrawal, pre-fill the destination account with the first entry's destination account.
+            // unless the user changes it, in which case we will not overwrite it.
             if (
-                "transfer" === this.groupProperties.transactionType ||
+                "" === this.entries[i].destination_account.alpine_name &&
                 "withdrawal" === this.groupProperties.transactionType
             ) {
+                console.log("Prefill destination account #", i, this.entries[i].destination_account);
+                this.entries[i].destination_account = JSON.parse(
+                    JSON.stringify(this.entries[i - 1].destination_account),
+                ); //structuredClone();
+            }
+
+            // disable source when withdrawal or transfer
+            if (isTransferOrWithdrawal) {
                 this.entries[i].source_account.disabled = true;
                 // console.log('Disable source account #' + i + 1);
             }
+
             // disable destination when deposit or transfer
-            if (
-                "transfer" === this.groupProperties.transactionType ||
-                "deposit" === this.groupProperties.transactionType
-            ) {
+            if (isTransferOrDeposit) {
                 this.entries[i].destination_account.disabled = true;
                 // console.log('Disable destination account #' + i + 1);
             }

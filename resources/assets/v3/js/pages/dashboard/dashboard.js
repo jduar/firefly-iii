@@ -22,7 +22,7 @@ import "../../boot/bootstrap.js";
 import sidebar from "../../pages/shared/sidebar.js";
 import dates from "../shared/dates.js";
 import boxes from "./boxes.js";
-import Alpine from "alpinejs";
+import Alpine from "@alpinejs/csp";
 import Get from "../../api/model/piggy-bank/get.js";
 import formatMoney from "../../util/format-money.js";
 import { getVariable } from "../../store/get-variable.js";
@@ -49,6 +49,7 @@ let index = function () {
                     "accounts-chart",
                     value,
                     true,
+                    true,
                 );
 
                 drawMultiCurrencyChart(
@@ -60,6 +61,7 @@ let index = function () {
                     "budgets-chart",
                     value,
                     false,
+                    true,
                 );
             });
         },
@@ -115,7 +117,7 @@ const comps = {
 };
 
 function loadPage(comps) {
-    console.log("loadPage");
+    // console.log("loadPage");
     Object.keys(comps).forEach((comp) => {
         let data = comps[comp]();
         Alpine.data(comp, () => data);
@@ -126,11 +128,11 @@ function loadPage(comps) {
 
 // wait for load until bootstrapped event is received.
 document.addEventListener("firefly-iii-bootstrapped", () => {
-    console.log("Loaded through event listener.");
+    // console.log("Loaded through event listener.");
     loadPage(comps);
 });
 // or is bootstrapped before event is triggered.
 if (window.bootstrapped) {
-    console.log("Loaded through window variable.");
+    // console.log("Loaded through window variable.");
     loadPage(comps);
 }

@@ -15,6 +15,10 @@
         <td>{!! $FF_IS_DEVELOP ? '<!-- .Z9JBCmw64Zkx1pQw -->' : 'v' !!}{{ $FF_VERSION }}</td>
     </tr>
     <tr>
+        <td>Installation ID</td>
+        <td>{{ $system['installation_id'] }}</td>
+    </tr>
+    <tr>
         <td>Build time</td>
         <td>{{ $system['build_time_nice'] }} ({{ $system['build_time'] }})</td>
     </tr>
@@ -110,8 +114,11 @@
     </tr>
     --}}
     <tr>
-        <td>Last cron job</td>
-        <td>{{ $app['last_cronjob'] }} ({{ $app['last_cronjob_ago'] }})</td>
+        <td>Last cron job(s)</td>
+        <td>
+            @foreach($app['cron_jobs'] as $cronJob)
+                <span>#</span>{{ $cronJob['user'] }}: {{ $cronJob['last_run'] }} ({{ $cronJob['last_run_ago'] }})<br>
+            @endforeach
     </tr>
     <tr>
         <td>Mailer</td>

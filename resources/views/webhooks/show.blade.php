@@ -5,9 +5,18 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="alert alert-success alert-dismissible" role="alert">
-                        <button class="close" data-bs-dismiss="alert" type="button"
-                                aria-label="{{ __('firefly.close') }}"><span aria-hidden="true">&times;</span></button>
-                        <strong>{{ __("firefly.flash_success") }}</strong> <span x-html="success_message"></span>
+                        <strong>{{ __("firefly.flash_success") }}</strong> <span x-text="success_message"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('firefly.close') }}"></button>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template x-if="error_message !== ''">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                        <strong>{{ __("firefly.flash_error") }}</strong> <span x-text="error_message"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('firefly.close') }}"></button>
                     </div>
                 </div>
             </div>
@@ -282,7 +291,7 @@
     </div>
 @endsection
 @section('scripts')
-    <script type="text/javascript" nonce="{{ $JS_NONCE }}">
+     <script nonce="{{ $JS_NONCE }}">
         var previousUrl = '{{ $previousUrl ?? '' }}';
     </script>
     @vite(['js/pages/webhooks/show.js'])

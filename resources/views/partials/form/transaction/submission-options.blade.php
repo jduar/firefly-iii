@@ -1,4 +1,10 @@
 <!-- RETURN HERE AFTER CREATE TRANSACTION -->
+<template x-if="true === transaction.ogReconciled">
+    <div class="form-check">
+        <input class="form-check-input" x-model="transaction.reconciled" type="checkbox" id="reconcileButton">
+        <label class="form-check-label" for="reconcileButton">{{ __('firefly.is_reconciled') }}</label>
+    </div>
+</template>
 <template x-if="'create' === formBehaviour.formType">
     <div class="form-check">
         <input class="form-check-input" x-model="formStates.returnHereButton" type="checkbox" id="returnButton">
@@ -31,11 +37,11 @@
 -->
 
 <div class="form-check">
-    <input class="form-check-input" type="checkbox" id="rulesButton" :checked="formStates.rulesButton">
+    <input class="form-check-input" type="checkbox" id="rulesButton" x-model="formStates.rulesButton" :checked="formStates.rulesButton">
     <label class="form-check-label" for="rulesButton">{{ __('firefly.apply_rules_checkbox') }}</label>
 </div>
 
 <div class="form-check">
-    <input class="form-check-input" type="checkbox" id="webhooksButton" :checked="formStates.webhooksButton">
+    <input class="form-check-input" type="checkbox" id="webhooksButton" x-model="formStates.webhooksButton" :checked="formStates.webhooksButton">
     <label class="form-check-label" for="webhooksButton">{{ __('firefly.fire_webhooks_checkbox') }}</label>
 </div>

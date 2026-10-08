@@ -1,4 +1,4 @@
-<template x-if="'edit' !== formBehaviour.formType && groupProperties.transactionType != 'deposit' && groupProperties.transactionType != 'withdrawal'">
+<template x-if="'edit' !== formBehaviour.formType">
     <div class="row mb-2">
         <label :for="'piggy_bank_id_' + index"
                class="col-sm-1 col-form-label d-none d-sm-block">
@@ -27,6 +27,10 @@
                         </optgroup>
                     </template>
                 </select>
+            </template>
+            <template x-if="transaction.errors.piggy_bank_id.length > 0">
+                <div class="invalid-feedback"
+                     x-text="transaction.errors.piggy_bank_id[0]"></div>
             </template>
         </div>
     </div>
