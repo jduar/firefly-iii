@@ -6,7 +6,8 @@
             </label>
             <div class="col-sm-10">
                 <select class="form-select"
-                        @change="applyTemplate($event.target.value, formData.transactionTemplates, index); $event.target.value = '';">
+                        :data-index="index"
+                        @change="changedTemplate">
                     <option value="">{{ __('transaction_templates.picker_placeholder') }}</option>
                     <template x-for="template in formData.transactionTemplates">
                         <option :value="template.id" x-text="template.name"></option>

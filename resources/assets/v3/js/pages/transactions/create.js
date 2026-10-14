@@ -79,7 +79,7 @@ import { keyUpFromDestination } from "./shared/keyup-from-destination.js";
 import { keyUpFromDescription } from "./shared/keyup-from-description.js";
 import focusFirstInput from "../../shared/focus-first-input.js";
 import filterForeignCurrencies from "./shared/filter-foreign-currencies.js";
-import { applyTemplate } from "./shared/apply-template.js";
+import { applyTemplate, changedTemplate } from "./shared/apply-template.js";
 
 window.enableDates = false;
 
@@ -206,6 +206,7 @@ let create = function () {
         keyUpFromDestination: keyUpFromDestination,
         keyUpFromDescription: keyUpFromDescription,
         applyTemplate: applyTemplate,
+        changedTemplate: changedTemplate,
         changedAmount: changedAmount,
         changedForeignAmount: changedForeignAmount,
         showMessageOrRedirectUser: showMessageOrRedirectUser,

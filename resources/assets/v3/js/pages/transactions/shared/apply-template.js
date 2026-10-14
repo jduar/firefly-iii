@@ -89,3 +89,14 @@ export function applyTemplate(templateId, templates, index) {
     // Same call changedSourceAccount() would make after an account changes.
     this.detectTransactionType();
 }
+
+/**
+ * @change handler for the template picker. The CSP build of Alpine cannot
+ * parse `$event` in expressions, so the select passes its index via data-index.
+ */
+export function changedTemplate(e) {
+    const index = parseInt(e.target.dataset.index);
+    this.applyTemplate(e.target.value, this.formData.transactionTemplates, index);
+    // Reset so the same template can be picked again.
+    e.target.value = "";
+}
